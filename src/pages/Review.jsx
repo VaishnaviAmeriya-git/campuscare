@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { collection, getDocs, orderBy, query } from "firebase/firestore";
 import { motion } from "framer-motion";
+import { db } from "../firebase";
 
 export default function Review() {
   const [summary, setSummary] = useState("");

@@ -6,35 +6,36 @@ export default function Mitra() {
   const [loading, setLoading] = useState(false);
 
   async function sendMessage() {
-    if (!input.trim()) return;
+  if (!input.trim()) return;
 
-    setLoading(true);
+  setLoading(true);
 
-    try {
-      const res = await fetch("/api/mitra", {
+  try {
+    const apiUrl =
+      import.meta.env.DEV
+        ? "http://localhost:3000/api/mitra"
+        : "/api/mitra";
+
+    const res = await fetch(
+      "https://campuscare-gk2ekr3ts-vaishnavis-projects-2c3bc718.vercel.app/api/mitra",
+      {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: input })
-      });
+      }
+    );
 
-      const data = await res.json();
+    const data = await res.json();
 
-      setMessages(m => [
-        ...m,
-        { you: input },
-        { bot: data.reply }
-      ]);
-    } catch (err) {
-      console.error(err);
-      setMessages(m => [
-        ...m,
-        { bot: "Error talking to Mitra." }
-      ]);
-    }
-
-    setInput("");
-    setLoading(false);
+    setMessages(m => [...m, { you: input }, { bot: data.reply }]);
+  } catch (err) {
+    console.error(err);
+    setMessages(m => [...m, { bot: "Error talking to Mitra." }]);
   }
+
+  setInput("");
+  setLoading(false);
+}
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-sm space-y-4">

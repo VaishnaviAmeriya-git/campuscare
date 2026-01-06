@@ -1,99 +1,66 @@
-import { useState, useEffect } from "react";
-import { db, auth, ensureAuth } from "../firebase";
-import {
-  collection,
-  addDoc,
-  serverTimestamp,
-  query,
-  orderBy,
-  onSnapshot
-} from "firebase/firestore";
+import React, { useState } from "react";
+import { addMoodEntry } from "../api/mood";
 
 export default function Mood() {
-  const [mood, setMood] = useState("🙂");
-  const [status, setStatus] = useState("");
-  const [moods, setMoods] = useState([]);
 
-  useEffect(() => {
-    async function load() {
-      await ensureAuth();
+  const [selected, setSelected] = useState(null);
+  const [emoji, setEmoji] = useState("🙂");
+  const [notes, setNotes] = useState("");
+  const [saving, setSaving] = useState(false);
 
-      const moodsRef = collection(
-        db,
-        "users",
-        auth.currentUser.uid,
-        "moods"
-      );
-
-      const q = query(moodsRef, orderBy("createdAt", "desc"));
-
-      return onSnapshot(q, (snap) => {
-        const list = [];
-        snap.forEach((doc) => list.push(doc.data()));
-        setMoods(list);
-      });
-    }
-
-    load();
-  }, []);
+  const moods = [
+    { score: 1, emoji: "😄", label: "Happy" },
+    { score: 2, emoji: "🙂", label: "Calm" },
+    { score: 3, emoji: "😐", label: "Neutral" },
+    { score: 4, emoji: "😟", label: "Stressed" },
+    { score: 5, emoji: "😢", label: "Sad" }
+  ];
 
   async function saveMood() {
-    try {
-      await ensureAuth();
-
-      await addDoc(
-        collection(db, "users", auth.currentUser.uid, "moods"),
-        {
-          mood,
-          createdAt: serverTimestamp()
-        }
-      );
-
-      setStatus("Mood saved!");
-    } catch (err) {
-      console.error(err);
-      setStatus("Error saving mood");
+    if (!selected) {
+      alert("Please select mood first");
+      return;
     }
+
+    setSaving(true);
+
+    await addMoodEntry({
+      mood_score: selected,
+      mood_emoji: emoji,
+      notes
+    });
+
+    setSaving(false);
+    alert("Mood saved 👍");
   }
 
   return (
-    <div className="p-6">
-      <h2 className="text-xl font-bold mb-3">How are you feeling?</h2>
+    <div className="bg-white p-6 rounded-xl shadow-sm space-y-3">
+      <h2 className="text-xl font-bold">Mood Tracker</h2>
 
-      <select
-        className="border p-2 rounded"
-        value={mood}
-        onChange={(e) => setMood(e.target.value)}
-      >
-        <option>🙂</option>
-        <option>😢</option>
-        <option>😡</option>
-        <option>😟</option>
-        <option>😎</option>
-      </select>
+      <p className="text-gray-600">
+        Tap how you feel today.
+      </p>
+
+      <div className="grid grid-cols-5 gap-3 mt-2">
+        {moods.map((m) => (
+          <button
+            key={m.score}
+            onClick={() => setSelected(m.score)}
+            className={`text-2xl ${selected === m.score ? "ring" : ""}`}
+          >
+            {m.emoji}
+          </button>
+        ))}
+      </div>
 
       <button
-        className="block mt-4 bg-blue-600 text-white px-4 py-2 rounded"
         onClick={saveMood}
+        disabled={saving}
+        className="bg-blue-600 text-white px-4 py-2 rounded mt-3"
       >
-        Save Mood
+        {saving ? "Saving…" : "Save Mood"}
       </button>
-
-      {status && <p className="mt-3">{status}</p>}
-
-      <h3 className="text-lg font-semibold mt-6 mb-2">
-        Recent moods
-      </h3>
-
-      {moods.length === 0 && <p>No moods yet.</p>}
-
-      <ul className="space-y-2">
-        {moods.map((m, i) => (
-          <li key={i} className="border p-2 rounded">
-            {m.mood}
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }

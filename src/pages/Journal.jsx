@@ -1,102 +1,78 @@
-import { useState, useEffect } from "react";
-import { db, auth, ensureAuth } from "../firebase";
-import {
-  collection,
-  addDoc,
-  query,
-  orderBy,
-  onSnapshot,
-  serverTimestamp
-} from "firebase/firestore";
+import React, { useEffect, useState } from "react";
+import { addJournalEntry, getJournalEntries } from "../api/journal";
 
 export default function Journal() {
-  const [text, setText] = useState("");
+
   const [entries, setEntries] = useState([]);
-  const [status, setStatus] = useState("");
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
-      await ensureAuth();
-
-      const ref = collection(
-        db,
-        "users",
-        auth.currentUser.uid,
-        "journal"
-      );
-
-      const q = query(ref, orderBy("createdAt", "desc"));
-
-      return onSnapshot(q, (snap) => {
-        const list = [];
-        snap.forEach((doc) =>
-          list.push({ id: doc.id, ...doc.data() })
-        );
-        setEntries(list);
-      });
+      const data = await getJournalEntries();
+      setEntries(data);
+      setLoading(false);
     }
 
     load();
   }, []);
 
-  async function save() {
-    if (!text.trim()) return;
-
-    try {
-      await ensureAuth();
-
-      await addDoc(
-        collection(db, "users", auth.currentUser.uid, "journal"),
-        {
-          text,
-          createdAt: serverTimestamp()
-        }
-      );
-
-      setText("");
-      setStatus("Saved!");
-    } catch (err) {
-      console.error(err);
-      setStatus("Error saving entry");
+  async function saveJournal() {
+    if (!content.trim()) {
+      alert("Write something first 🙂");
+      return;
     }
+
+    await addJournalEntry({ title, content });
+
+    setTitle("");
+    setContent("");
+
+    const data = await getJournalEntries();
+    setEntries(data);
   }
 
   return (
-    <div className="p-6">
-      <h2 className="text-xl font-bold mb-3">
-        Daily Journal
-      </h2>
+    <div className="space-y-4 p-4">
+      <h1 className="text-xl font-bold">Journal</h1>
+
+      <input
+        className="border p-2 w-full rounded"
+        placeholder="Title (optional)"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+      />
 
       <textarea
-        className="border w-full p-2 rounded"
-        rows={4}
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        placeholder="Write your thoughts here..."
+        className="border p-2 w-full rounded"
+        rows={5}
+        placeholder="Write your thoughts…"
+        value={content}
+        onChange={(e) => setContent(e.target.value)}
       />
 
       <button
-        className="mt-3 bg-purple-600 text-white px-4 py-2 rounded"
-        onClick={save}
+        onClick={saveJournal}
+        className="bg-blue-600 text-white px-4 py-2 rounded"
       >
-        Save Entry
+        Save
       </button>
 
-      {status && <p className="mt-2">{status}</p>}
+      <hr />
 
-      <h3 className="text-lg font-semibold mt-6 mb-2">
-        Previous entries
-      </h3>
-
-      {entries.length === 0 && <p>No entries yet.</p>}
-
-      <ul className="space-y-3">
-        {entries.map((e) => (
-          <li key={e.id} className="border p-3 rounded">
-            {e.text}
-          </li>
-        ))}
-      </ul>
+      {loading ? (
+        <p>Loading...</p>
+      ) : entries.length === 0 ? (
+        <p>No entries yet.</p>
+      ) : (
+        entries.map(e => (
+          <div key={e.id} className="border p-3 rounded mb-2">
+            <h3 className="font-semibold">{e.title || "Untitled"}</h3>
+            <p className="text-sm text-gray-700">{e.content}</p>
+          </div>
+        ))
+      )}
     </div>
   );
 }

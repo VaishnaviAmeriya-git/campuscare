@@ -1,30 +1,82 @@
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+
+import { getUserProfile, createUserProfile } from "../api/userProfile";
+
 
 export default function Home() {
-  return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">CampusCare</h1>
+  useEffect(() => {
+  async function load() {
+    const profile = await getUserProfile();
 
-      <p className="mb-4">
-        Your wellbeing companion — track moods, journal, talk to Mitra, join peer circles, and review your progress.
+    if (!profile) {
+      await createUserProfile({
+        anonymous_name: "Friend",
+        dark_mode: false
+      });
+    }
+  }
+
+  load();
+}, []);
+  return (
+    <div className="bg-white p-6 rounded-xl shadow-sm space-y-4">
+      <h2 className="text-xl font-bold">Welcome to CampusCare</h2>
+
+      <p className="text-gray-600">
+        Your wellbeing companion — track moods, journal thoughts, talk to Mitra,
+        join circles, and reflect on your progress.
       </p>
 
-      <div className="space-x-2">
-        <Link className="bg-blue-600 text-white px-4 py-2 rounded" to="/mood">
-          Mood Tracker
-        </Link>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+        <a
+          href="/mood"
+          className="block border rounded-xl p-4 hover:shadow-md transition"
+        >
+          <h3 className="font-semibold">😊 Mood Tracker</h3>
+          <p className="text-gray-600 text-sm">
+            Log how you feel and notice emotional patterns.
+          </p>
+        </a>
 
-        <Link className="bg-purple-600 text-white px-4 py-2 rounded" to="/journal">
-          Journal
-        </Link>
+        <a
+          href="/journal"
+          className="block border rounded-xl p-4 hover:shadow-md transition"
+        >
+          <h3 className="font-semibold">📓 Journal</h3>
+          <p className="text-gray-600 text-sm">
+            Write freely — thoughts, worries, gratitude.
+          </p>
+        </a>
 
-        <Link className="bg-green-600 text-white px-4 py-2 rounded" to="/mitra">
-          Mitra AI
-        </Link>
+        <a
+          href="/peers"
+          className="block border rounded-xl p-4 hover:shadow-md transition"
+        >
+          <h3 className="font-semibold">👥 Peer Circles</h3>
+          <p className="text-gray-600 text-sm">
+            Share experiences and support others safely.
+          </p>
+        </a>
 
-        <Link className="bg-orange-600 text-white px-4 py-2 rounded" to="/review">
-          Daily Review AI
-        </Link>
+        <a
+          href="/review"
+          className="block border rounded-xl p-4 hover:shadow-md transition"
+        >
+          <h3 className="font-semibold">📊 Daily Review</h3>
+          <p className="text-gray-600 text-sm">
+            AI reflection based on moods + journals.
+          </p>
+        </a>
+
+        <a
+          href="/mitra"
+          className="block border rounded-xl p-4 hover:shadow-md transition"
+        >
+          <h3 className="font-semibold">🤖 Mitra AI</h3>
+          <p className="text-gray-600 text-sm">
+            Have a gentle conversation — get support.
+          </p>
+        </a>
       </div>
     </div>
   );

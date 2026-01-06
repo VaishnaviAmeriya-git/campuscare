@@ -1,58 +1,68 @@
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Layout from "./components/Layout";
+import Resources from "./pages/Resources";
+
+import Home from "./pages/Home";
 import Mood from "./pages/Mood";
 import Journal from "./pages/Journal";
 import Mitra from "./pages/Mitra";
-import Home from "./pages/Home";
 import Review from "./pages/Review";
 import PeerCircles from "./pages/PeerCircles";
+import NotFound from "./pages/NotFound";
+import ProtectedRoute from "./components/ProtectedRoute";
 
-
-
-
-function App() {
+export default function App() {
   return (
     <BrowserRouter>
-      <div className="p-6">
-        <h1 className="text-2xl font-bold">CampusCare</h1>
+      <Layout>
+        <Routes>
+          <Route
+  path="/journal"
+  element={
+    <ProtectedRoute>
+      <Journal />
+    </ProtectedRoute>
+  }
+/>
 
-        <Link
-          to="/mood"
-          className="inline-block mt-4 bg-blue-600 text-white px-4 py-2 rounded"
-        >
-          Mood Tracker
-        </Link>
+<Route
+  path="/mood"
+  element={
+    <ProtectedRoute>
+      <Mood />
+    </ProtectedRoute>
+  }
+/>
 
-        <Link
-          to="/journal"
-          className="inline-block mt-2 bg-purple-600 text-white px-4 py-2 rounded ml-2"
-        >
-          Journal
-        </Link>
-        <Link className="bg-teal-600 text-white px-4 py-2 rounded" to="/peers">
-  Peer Circles
-</Link>
+<Route
+  path="/peer"
+  element={
+    <ProtectedRoute>
+      <PeerCircles />
+    </ProtectedRoute>
+  }
+/>
 
-        <Link
-  to="/mitra"
-  className="inline-block mt-2 bg-green-600 text-white px-4 py-2 rounded ml-2"
->
-  Mitra AI
-</Link>
+<Route
+  path="/review"
+  element={
+    <ProtectedRoute>
+      <Review />
+    </ProtectedRoute>
+  }
+/>
 
-      </div>
+          <Route path="/" element={<Home />} />
+          <Route path="/mood" element={<Mood />} />
+          <Route path="/journal" element={<Journal />} />
+          <Route path="/mitra" element={<Mitra />} />
+          <Route path="/review" element={<Review />} />
+          <Route path="/peers" element={<PeerCircles />} />
+          <Route path="*" element={<NotFound />} />
+          <Route path="/resources" element={<Resources />} />
 
-      <Routes>
-        <Route path="/mood" element={<Mood />} />
-        <Route path="/journal" element={<Journal />} />
-        <Route path="/mitra" element={<Mitra />} />
-        <Route path="/" element={<Home />} />
-        <Route path="/review" element={<Review />} />
-        <Route path="/peers" element={<PeerCircles />} />
-
-      </Routes>
-
+        </Routes>
+      </Layout>
     </BrowserRouter>
   );
 }
-
-export default App;

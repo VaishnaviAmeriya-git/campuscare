@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
-import { db, auth, ensureAuth } from "../firebase";
+import { useState } from "react";
 import { collection, getDocs, orderBy, query } from "firebase/firestore";
+import { motion } from "framer-motion";
 
 export default function Review() {
   const [summary, setSummary] = useState("");
@@ -8,7 +8,7 @@ export default function Review() {
 
   async function generateReview() {
     setLoading(true);
-    await ensureAuth();
+
 
     const moodsRef = collection(db, "users", auth.currentUser.uid, "moods");
     const journalRef = collection(db, "users", auth.currentUser.uid, "journal");
@@ -23,9 +23,8 @@ export default function Review() {
     journalSnap.forEach((d) => notes.push(d.data().text));
 
     const res = await fetch(
-      "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=" +
-        import.meta.env.VITE_GEMINI_API_KEY,
-      {
+  `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash-latest:generateContent?key=${import.meta.env.VITE_GEMINI_API_KEY}`,
+{
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -34,16 +33,14 @@ export default function Review() {
               parts: [
                 {
                   text: `
-Analyze mood patterns + journal reflections.
+Use the information below and write:
+• short emotional reflection
+• strengths noticed
+• 1 gentle suggestion
+(no medical advice)
 
 Moods: ${moods.join(", ")}
-Journal notes: ${notes.join(" | ")}
-
-Give:
-• short emotional summary
-• 1–2 strengths
-• 1 gentle suggestion 
-No medical advice.
+Journal: ${notes.join(" | ")}
 `
                 }
               ]
@@ -55,17 +52,21 @@ No medical advice.
 
     const data = await res.json();
     setSummary(data?.candidates?.[0]?.content?.parts?.[0]?.text || "No data yet.");
+
     setLoading(false);
   }
 
   return (
-    <div className="p-6">
-      <h2 className="text-xl font-bold mb-3">Daily Review</h2>
+    <motion.div
+      className="bg-white p-6 rounded-xl shadow-sm space-y-3"
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+    >
+      <h2 className="text-xl font-bold">Daily Review</h2>
 
       <button
         onClick={generateReview}
         className="bg-orange-600 text-white px-4 py-2 rounded"
-        disabled={loading}
       >
         {loading ? "Analyzing..." : "Generate Review"}
       </button>
@@ -75,6 +76,6 @@ No medical advice.
           {summary}
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

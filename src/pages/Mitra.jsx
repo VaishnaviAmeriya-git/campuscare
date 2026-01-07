@@ -5,18 +5,12 @@ export default function Mitra() {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const API_URL =
-    import.meta.env.DEV
-      ? "http://localhost:3000/api/mitra"
-      : "/api/mitra";
-
   async function sendMessage() {
     if (!input.trim()) return;
-
     setLoading(true);
 
     try {
-      const res = await fetch(API_URL, {
+      const res = await fetch("/api/mitra", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: input })
@@ -24,18 +18,10 @@ export default function Mitra() {
 
       const data = await res.json();
 
-      setMessages(m => [
-        ...m,
-        { you: input },
-        { bot: data.reply || "Couldn't reply right now." }
-      ]);
-
+      setMessages(m => [...m, { you: input }, { bot: data.reply }]);
     } catch (err) {
       console.error(err);
-      setMessages(m => [
-        ...m,
-        { bot: "Server error — please try again." }
-      ]);
+      setMessages(m => [...m, { bot: "Error talking to Mitra." }]);
     }
 
     setInput("");
@@ -43,33 +29,31 @@ export default function Mitra() {
   }
 
   return (
-    <div className="p-6 max-w-xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Mitra</h1>
+    <div className="bg-white p-6 rounded-xl shadow-sm space-y-4">
+      <h2 className="text-xl font-bold">Mitra AI</h2>
 
-      <div className="space-y-2 mb-4">
+      <div className="space-y-2 h-64 overflow-y-auto border p-3 rounded">
         {messages.map((m, i) => (
-          <div key={i} className={m.you ? "text-blue-600" : "text-green-700"}>
-            {m.you ? `You: ${m.you}` : `Mitra: ${m.bot}`}
-          </div>
+          <p key={i}>
+            <b>{m.you ? "You" : "Mitra"}:</b> {m.you || m.bot}
+          </p>
         ))}
       </div>
 
-      <div className="flex gap-2">
-        <input
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          className="border px-3 py-2 flex-1 rounded"
-          placeholder="Type your message…"
-        />
+      <input
+        className="border p-2 rounded w-full"
+        value={input}
+        onChange={e => setInput(e.target.value)}
+        placeholder="Talk to Mitra..."
+      />
 
-        <button
-          onClick={sendMessage}
-          disabled={loading}
-          className="bg-indigo-600 text-white px-4 py-2 rounded"
-        >
-          {loading ? "Thinking…" : "Send"}
-        </button>
-      </div>
+      <button
+        onClick={sendMessage}
+        disabled={loading}
+        className="bg-green-600 text-white px-4 py-2 rounded"
+      >
+        {loading ? "Thinking..." : "Send"}
+      </button>
     </div>
   );
 }

@@ -27,3 +27,11 @@ node_modules
 dist
 .vite
 
+
+.vercel
+.env*.local
+
+.env.local
+.env.development
+.env.production
+.env.server

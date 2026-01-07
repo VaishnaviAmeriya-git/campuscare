@@ -5,64 +5,71 @@ export default function Mitra() {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  const API_URL =
+    import.meta.env.DEV
+      ? "http://localhost:3000/api/mitra"
+      : "/api/mitra";
+
   async function sendMessage() {
-  if (!input.trim()) return;
+    if (!input.trim()) return;
 
-  setLoading(true);
+    setLoading(true);
 
-  try {
-    const apiUrl =
-      import.meta.env.DEV
-        ? "http://localhost:3000/api/mitra"
-        : "/api/mitra";
-
-    const res = await fetch(
-      "https://campuscare-gk2ekr3ts-vaishnavis-projects-2c3bc718.vercel.app/api/mitra",
-      {
+    try {
+      const res = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: input })
-      }
-    );
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    setMessages(m => [...m, { you: input }, { bot: data.reply }]);
-  } catch (err) {
-    console.error(err);
-    setMessages(m => [...m, { bot: "Error talking to Mitra." }]);
+      setMessages(m => [
+        ...m,
+        { you: input },
+        { bot: data.reply || "Couldn't reply right now." }
+      ]);
+
+    } catch (err) {
+      console.error(err);
+      setMessages(m => [
+        ...m,
+        { bot: "Server error — please try again." }
+      ]);
+    }
+
+    setInput("");
+    setLoading(false);
   }
 
-  setInput("");
-  setLoading(false);
-}
-
   return (
-    <div className="bg-white p-6 rounded-xl shadow-sm space-y-4">
-      <h2 className="text-xl font-bold">Mitra AI</h2>
+    <div className="p-6 max-w-xl mx-auto">
+      <h1 className="text-2xl font-bold mb-4">Mitra</h1>
 
-      <div className="space-y-2 h-64 overflow-y-auto border p-3 rounded">
+      <div className="space-y-2 mb-4">
         {messages.map((m, i) => (
-          <p key={i}>
-            <b>{m.you ? "You" : "Mitra"}:</b> {m.you || m.bot}
-          </p>
+          <div key={i} className={m.you ? "text-blue-600" : "text-green-700"}>
+            {m.you ? `You: ${m.you}` : `Mitra: ${m.bot}`}
+          </div>
         ))}
       </div>
 
-      <input
-        className="border p-2 rounded w-full"
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        placeholder="Talk to Mitra..."
-      />
+      <div className="flex gap-2">
+        <input
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          className="border px-3 py-2 flex-1 rounded"
+          placeholder="Type your message…"
+        />
 
-      <button
-        onClick={sendMessage}
-        disabled={loading}
-        className="bg-green-600 text-white px-4 py-2 rounded"
-      >
-        {loading ? "Thinking..." : "Send"}
-      </button>
+        <button
+          onClick={sendMessage}
+          disabled={loading}
+          className="bg-indigo-600 text-white px-4 py-2 rounded"
+        >
+          {loading ? "Thinking…" : "Send"}
+        </button>
+      </div>
     </div>
   );
 }

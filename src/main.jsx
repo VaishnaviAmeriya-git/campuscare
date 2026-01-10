@@ -5,6 +5,9 @@ import App from "./App.jsx";
 import { useEffect } from "react";
 import { auth } from "./firebase";
 import { signInAnonymously, onAuthStateChanged } from "firebase/auth";
+import { ThemeProvider } from "./context/ThemeContext";
+
+import "./index.css";
 
 function AuthWrapper({ children }) {
   useEffect(() => {
@@ -20,8 +23,8 @@ function AuthWrapper({ children }) {
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <AuthWrapper>
+    <ThemeProvider>
       <App />
-    </AuthWrapper>
+    </ThemeProvider>
   </React.StrictMode>
 );

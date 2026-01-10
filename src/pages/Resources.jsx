@@ -1,53 +1,48 @@
-import React, { useEffect, useState } from "react";
-import { getResources } from "../api/resources";
-
 export default function Resources() {
-
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function load() {
-      const data = await getResources();
-      setItems(data);
-      setLoading(false);
+  const resources = [
+    {
+      title: "Feeling overwhelmed?",
+      desc: "Short reads to calm your mind when everything feels too much."
+    },
+    {
+      title: "Exam stress",
+      desc: "Simple ways to steady yourself before tests and deadlines."
+    },
+    {
+      title: "Low energy days",
+      desc: "Gentle ideas for days when motivation is low."
+    },
+    {
+      title: "Sleep & rest",
+      desc: "Why rest matters — without pressure or guilt."
     }
-
-    load();
-  }, []);
+  ];
 
   return (
-    <div className="p-4 space-y-4">
-      <h1 className="text-xl font-bold">Helpful Resources</h1>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 px-4 py-6">
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+        📚 Resources
+      </h2>
 
-      {loading ? (
-        <p>Loading...</p>
-      ) : items.length === 0 ? (
-        <p>No resources yet.</p>
-      ) : (
-        items.map(r => (
-          <div key={r.id} className="border rounded p-3 space-y-1">
-            <h3 className="font-semibold">{r.title}</h3>
+      <p className="text-gray-600 dark:text-gray-300 mb-6">
+        No pressure. Just gentle things you can read when you want.
+      </p>
 
-            <p className="text-sm text-gray-600">
-              {r.description}
+      <div className="space-y-4">
+        {resources.map((r, i) => (
+          <div
+            key={i}
+            className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm"
+          >
+            <h3 className="font-semibold text-gray-900 dark:text-white">
+              {r.title}
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+              {r.desc}
             </p>
-
-            <span className="text-xs bg-gray-200 px-2 py-1 rounded">
-              {r.category}
-            </span>
-
-            <a
-              className="text-blue-600 block mt-1 underline"
-              href={r.link}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Open
-            </a>
           </div>
-        ))
-      )}
+        ))}
+      </div>
     </div>
   );
 }

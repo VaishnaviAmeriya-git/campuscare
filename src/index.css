@@ -2,5 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 body {
+  font-family: 'Inter', system-ui, sans-serif;
+
   background: #f9fafb;
+}
+.light {
+  background-color: #f9fafb;
+  color: #111827;
+}
+
+.dark {
+  background-color: #0f172a; /* soft navy */
+  color: #e5e7eb;
 }

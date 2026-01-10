@@ -1,44 +1,24 @@
-import { db, auth } from "../firebase";
-import { collection, addDoc, getDocs, query, where, orderBy } from "firebase/firestore";
-import { onAuthStateChanged } from "firebase/auth";
+import { db } from "../firebase";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 
-function waitForUser() {
-  return new Promise((resolve) => {
-    const unsub = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        unsub();
-        resolve(user);
-      }
-    });
+import { query, where, getDocs } from "firebase/firestore";
+
+export async function saveMood(emoji) {
+  return addDoc(collection(db, "moods"), {
+    emoji,
+    createdAt: serverTimestamp()
   });
 }
 
-export async function addMoodEntry({ mood_score, mood_emoji, notes }) {
-  const user = auth.currentUser || await waitForUser();
-
-  const today = new Date().toISOString().split("T")[0];
-
-  return addDoc(collection(db, "moodEntries"), {
-    user_id: user.uid,
-    mood_score,
-    mood_emoji,
-    notes: notes || "",
-    date: today,
-    created_at: new Date().toISOString()
-  });
-}
-
-export async function getTodaysMood() {
-  const user = auth.currentUser || await waitForUser();
-  const today = new Date().toISOString().split("T")[0];
+export async function getTodayMoods() {
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
 
   const q = query(
-    collection(db, "moodEntries"),
-    where("user_id", "==", user.uid),
-    where("date", "==", today),
-    orderBy("created_at", "desc")
+    collection(db, "moods"),
+    where("createdAt", ">=", start)
   );
 
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  const snap = await getDocs(q);
+  return snap.docs.map(d => d.data().emoji);
 }
